@@ -85,31 +85,7 @@ const getBlogs = async function (req, res) {
     let filter = {
       isdeleted: false,
       isPublished: true,
-      ...data,
     };
-
-    const { category, subcategory, tags } = data
-    
-    if (category) {
-      let verifyCategory = await blogModel.findOne({ category: category })
-      if (!verifyCategory) {
-        return res.status(400).send({ status: false, msg: 'No blogs in this category exist' })
-      }
-    }
-
-    if (tags) {
-
-      if (!await blogModel.exists(tags)) {
-        return res.status(400).send({ status: false, msg: 'no blog with this tags exist' })
-      }
-    }
-
-    if (subcategory) {
-
-      if (!await blogModel.exists(subcategory)) {
-        return res.status(400).send({ status: false, msg: 'no blog with this subcategory exist' })
-      }
-    }
 
     let getSpecificBlogs = await blogModel.find(filter);
 
