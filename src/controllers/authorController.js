@@ -22,7 +22,7 @@ const createAuthor = async function(req,res){
 
         else{
             let authorCreated = await authorModel.create(requestData)
-            return  res.status(201).send({status : true, msg : "You have successfully registered", data : authorCreated})
+            return res.status(201).send({status : true, msg : "You have successfully registered", data : authorCreated})
             }
         }
     catch(err){

@@ -114,9 +114,7 @@ const getBlogs = async function (req, res) {
     let getSpecificBlogs = await blogModel.find(filter);
 
     if (getSpecificBlogs.length == 0) {
-      return res
-        .status(400)
-        .send({ status: false, data: "No blogs can be found" });
+      return res.status(400).send({ status: false, data: "No blogs can be found" });
     } 
     else {
       return res.status(200).send({ status: true, data: getSpecificBlogs });
@@ -211,16 +209,15 @@ const deleteBlog = async function (req, res) {
         return res.status(400).send({status: false, msg: "Please provide a Valid blogId"})
     }
 
-    if (! await blogModel.findById(blog)) {
+    let blogFound = await blogModel.findOne({_id : blog})
+
+    if (!blogFound) {
       return res.status(400).send({ status: false, msg: "No blog exists bearing this Blog Id, please provide another one" })
     }
-
-    let blogFound = await blogModel.findOne({_id : blog})
 
     if(blogFound.authorId != authorId){
       return res.status(400).send({status : false, msg :"You are trying to perform an Unauthorized action"})
     }
-           
   
     if(blogFound.isdeleted===true){
       return res.status(404).send({status:false,msg:"this blog has been deleted by You"})
@@ -283,7 +280,7 @@ const blogByQuery = async (req, res) =>{
       return res.status(400).send({status :false, msg : "no blogs are present with this query"})
     }
 
-    const deleteByQuery = await blogModel.updateMany(findBlog,{ isdeleted: true, deletedAt: new Date() },
+    const deleteByQuery = await blogModel.updateMany(data,{ isdeleted: true, deletedAt: new Date() },
       { new: true }               
     );
 
@@ -291,7 +288,7 @@ const blogByQuery = async (req, res) =>{
       return res.status(404).send({ status: false, message: "No such blog found" });
     } 
     else{
-    res.status(200).send({ status: true, data: deleteByQuery })
+    res.status(200).send({ status: true, msg : "Your blogs have been deleted", data: deleteByQuery })
     }
 } 
   catch (error) {
