@@ -130,7 +130,7 @@ const getBlogs = async function (req, res) {
 
 
 
-const putBlog = async function (req, res) {
+const putBlog = async function(req, res) {
 
   try {
     let data = req.body
@@ -138,7 +138,7 @@ const putBlog = async function (req, res) {
     let id = req.params.blogId
     
     if(!id){ 
-        return res.statu(400).send({status:false, msg :"blogId must be present in request param "})
+        return res.status(400).send({status:false, msg :"blogId must be present in request param "})
     }
 
     if(!mongoose.isValidObjectId(id)){
@@ -243,7 +243,7 @@ const deleteBlog = async function (req, res) {
 
 
 
-const blogByQuery = async (req, res) =>{
+const blogByQuery = async (req, res) => {
   try {
     const data = req.query;
 
