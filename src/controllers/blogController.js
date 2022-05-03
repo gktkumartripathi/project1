@@ -1,4 +1,3 @@
-const { response } = require("express");
 const { default: mongoose } = require("mongoose")
 const blogModel = require("../models/blogModel")
 
@@ -6,24 +5,13 @@ const blogModel = require("../models/blogModel")
 const createBlog = async function (req, res) {
   try {
     const blog = req.body;
-
-    const {authorId, title, body, category, isPublished, tags, subcategory} = blog
-
-    let blogData = {
-      authorId,
-      title,
-      body,
-      tags,
-      category,
-      subcategory,
-      isPublished
-    }
+    const {category, tags, subcategory} = blog
 
     if (tags) {
 
       if (Array.isArray(tags)) {
         const uniqueTagArr = [...new Set(tags)];
-        blogData["tags"] = uniqueTagArr; //Using array constructor here
+        blog["tags"] = uniqueTagArr; //Using array constructor here
       }
     }
 
@@ -31,31 +19,22 @@ const createBlog = async function (req, res) {
 
       if (Array.isArray(subcategory)) {
         const uniqueSubcategoryArr = [...new Set(subcategory)];
-        blogData["subcategory"] = uniqueSubcategoryArr; //Using array constructor here
+        blog["subcategory"] = uniqueSubcategoryArr; //Using array constructor here
       }
     }
 
-    if (category) {
-
-      if(category.length === 0){
-        return res.status(400).send({status : false, msg : "category can not be empty"})
-      }
-
-      if (Array.isArray(category)) {
-        const uniqueSubcategoryArr = [...new Set(category)];
-        blogData["category"] = uniqueSubcategoryArr; //Using array constructor here
-      }
-    }else{
-      return res.status(400).send({status : false, msg : "Category is a required field" })
+    if (!category) {
+      return res.status(400).send({status : false, msg : "Category is a required"})
     }
 
-    let findBlog = await blogModel.findOne(blogData)
+
+    let findBlog = await blogModel.findOne(blog)
  
     if(findBlog){
       return res.status(400).send({status: false, msg : "this blog already exists, try updating it"})
     }
     
-    let blogCreated = await blogModel.create(blogData);
+    let blogCreated = await blogModel.create(blog);
 
     if (blogCreated.isPublished === true) {
       let mainBlog = await blogModel.findOneAndUpdate(
@@ -153,10 +132,8 @@ const putBlog = async function(req, res) {
       }
     }
 
-    if(category){
-      if(! Array.isArray(category)){
-        return res.status(400).send({status : false, msg : "input category must be an Array"})
-      }
+    if(!category){
+      return res.status(400).send({status : false, msg : "category is an important field"})
     }
 
     if(subcategory){
@@ -165,7 +142,6 @@ const putBlog = async function(req, res) {
       }
     }
 
-
     let blogFound = await blogModel.findOne({_id : id})
 
     if(!blogFound){
@@ -173,16 +149,13 @@ const putBlog = async function(req, res) {
     }
 
     if(blogFound.authorId != authorId){
-      return res.status(400).send({status : false, msg :"You are trying to perform an Unauthorized action"})
+      return res.status(401).send({status : false, msg :"You are trying to perform an Unauthorized action"})
     }
     
-    let updatedBlog = await blogModel.findOneAndUpdate({_id: id, authorId: authorId}, { $set: data }, { new: true, upsert : true })
+    let updatedBlog = await blogModel.findOneAndUpdate({_id: id, authorId: authorId}, { $addToSet: { tags: data.tags, subcategory: data.subcategory }, $set: { title: data.title, body: data.body, category: data.category } }, { new: true, upsert : true })
 
-    if (!updatedBlog) {
-        return res.status(404).send({ status : false, msg: "we are not able to update it " })
-    }
-    else{ 
-        return res.status(200).send({ status: true, data: updatedBlog })
+    if (updatedBlog){
+       return res.status(200).send({ status: true, data: updatedBlog })
     }
   }
   catch (error) {
